@@ -66,9 +66,19 @@ export async function exchangeCode(code: string): Promise<TokenResponse> {
   return t;
 }
 
+// Um único refresh por vez: chamadas paralelas esperam o mesmo resultado em vez de
+// cada uma trocar (e invalidar) o refresh token da outra.
+let refreshing: Promise<string> | null = null;
+
 export async function getAccessToken(): Promise<string> {
   if (cache && cache.expiresAt - 60_000 > Date.now()) return cache.token;
+  refreshing ??= refreshAccessToken().finally(() => {
+    refreshing = null;
+  });
+  return refreshing;
+}
 
+async function refreshAccessToken(): Promise<string> {
   const refreshToken = await loadRefreshToken();
   if (!refreshToken) {
     throw new Error(
