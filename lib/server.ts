@@ -8,6 +8,7 @@ import {
   getLists,
   getTask,
   getTasks,
+  mapLimit,
   resolveList,
   setChecklistItem,
   summarize,
@@ -86,16 +87,21 @@ export function buildServer(): McpServer {
       inputSchema: {
         data: DATE.optional().describe("Data AAAA-MM-DD (padrão: hoje)"),
         incluir_atrasadas: z.boolean().optional().describe("Incluir pendentes com vencimento anterior (padrão: true)"),
+        incluir_emails_sinalizados: z
+          .boolean()
+          .optional()
+          .describe("Incluir a lista especial de e-mails sinalizados do Outlook (padrão: false; costuma ser grande)"),
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ data, incluir_atrasadas }) => run(async () => {
+    async ({ data, incluir_atrasadas, incluir_emails_sinalizados }) => run(async () => {
       const day = data ?? todayLocal();
       const withOverdue = incluir_atrasadas ?? true;
-      const lists = await getLists(true);
-      const perList = await Promise.all(
-        lists.map(async (l) => ({ list: l, tasks: await getTasks(l.id) }))
+      const lists = (await getLists()).filter(
+        (l) => incluir_emails_sinalizados || l.wellknownListName !== "flaggedEmails"
       );
+      // Uma lista de cada vez em pares, nunca todas juntas: era essa rajada que gerava o 429.
+      const perList = await mapLimit(lists, 2, async (l) => ({ list: l, tasks: await getTasks(l.id) }));
 
       const doDia: ReturnType<typeof summarize>[] = [];
       const atrasadas: ReturnType<typeof summarize>[] = [];
