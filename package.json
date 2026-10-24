@@ -1,0 +1,28 @@
+{
+  "name": "todo-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Servidor MCP remoto que conecta o Claude ao Microsoft To Do (conta pessoal) via Microsoft Graph",
+  "license": "MIT",
+  "keywords": ["mcp", "model-context-protocol", "claude", "microsoft-todo", "microsoft-graph", "vercel"],
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "typecheck": "tsc --noEmit",
+    "test:tools": "tsx scripts/list-tools.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@vercel/node": "^5.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
