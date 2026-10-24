@@ -65,16 +65,9 @@ export async function resolveList(nameOrId: string): Promise<TodoList> {
 
 // ---------- tarefas ----------
 
-// Só os campos que o conector usa: respostas menores, menos custo por pedido.
-const TASK_FIELDS =
-  "id,title,status,importance,isReminderOn,dueDateTime,reminderDateTime,completedDateTime,recurrence,createdDateTime,lastModifiedDateTime";
-
 export async function getTasks(listId: string, includeCompleted = false): Promise<TodoTask[]> {
   const filter = includeCompleted ? "" : `&$filter=${enc("status ne 'completed'")}`;
-  return graphAll<TodoTask>(
-    `/me/todo/lists/${enc(listId)}/tasks?$top=100&$select=${TASK_FIELDS}${filter}`,
-    includeCompleted ? 300 : 1000
-  );
+  return graphAll<TodoTask>(`/me/todo/lists/${enc(listId)}/tasks?$top=100${filter}`, includeCompleted ? 300 : 1000);
 }
 
 /** Roda `fn` em cada item com no máximo `limit` de cada vez (evita rajadas no Graph). */
